@@ -1,8 +1,3 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-
 public class RequestLoggingMiddleware
 {
     private readonly RequestDelegate _next;
@@ -16,25 +11,16 @@ public class RequestLoggingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var correlationId = Guid.NewGuid().ToString("N")[..8]; 
-        context.Response.Headers.Append("X-Correlation-Id", correlationId); 
+        var correlationId = context.Request.Headers["X-Correlation-Id"].FirstOrDefault()
+                            ?? Guid.NewGuid().ToString();
 
-        var stopwatch = Stopwatch.StartNew();
+        context.Response.Headers["X-Correlation-Id"] = correlationId;
 
-        _logger.LogInformation("--> Entry: Method={Method}, Path={Path}, CorrelationId={CorrelationId}", 
-            context.Request.Method, context.Request.Path, correlationId); 
+        _logger.LogInformation("Incoming request {Method} {Path} CorrelationId={CorrelationId}",
+            context.Request.Method,
+            context.Request.Path,
+            correlationId);
 
-        try
-        {
-            await _next(context);
-        }
-        finally
-        {
-            stopwatch.Stop(); 
-
-           
-            _logger.LogInformation("<-- Exit: StatusCode={StatusCode}, Elapsed={ElapsedMs}ms, CorrelationId={CorrelationId}", 
-                context.Response.StatusCode, stopwatch.ElapsedMilliseconds, correlationId); // [cite: 95]
-        }
+        await _next(context);
     }
 }

@@ -3,31 +3,50 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database service (Configured to use an In-Memory database for testing)
-builder.Services.AddDbContext<DbContext>(options => options.UseInMemoryDatabase("AppDb"));
+// Add this
+builder.Host.UseDefaultServiceProvider(options =>
+{
+    options.ValidateScopes = true;
+    options.ValidateOnBuild = true;
+});
 
-// 2. Identity and security services configuration
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseInMemoryDatabase("AppDb"));
+
+// Authentication
 builder.Services.AddAuthentication();
 
 builder.Services.AddAuthorization();
-builder.Services.AddIdentityApiEndpoints<IdentityUser>()
-    .AddEntityFrameworkStores<DbContext>();
 
+builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+   .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllers();
 
+// // Exercise 2
+// builder.Services.AddSingleton<EnrollmentWorker>();
+// builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+
+// // Exercise 3
+// builder.Services
+//     .AddOptions<PaymentOptions>()
+//     .BindConfiguration("Payments")
+//     .ValidateDataAnnotations()
+//     .ValidateOnStart();
+
 var app = builder.Build();
-
-// 3. Map Identity API Endpoints (Creates /register and /login automatically)
+app.UseMiddleware<RequestLoggingMiddleware>();
 app.MapIdentityApi<IdentityUser>();
+app.UseRouting();
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
-// 4. Protected API Endpoint secured with authentication
-app.MapGet("/api/assessments/results", () => Results.Ok(new 
+app.MapGet("/api/assessments/results", () => Results.Ok(new
 {
     courseCode = "CS-101",
     studentId = "S-001",
     letterGrade = "A"
-})).RequireAuthorization(); // <-- This line restricts access to authorized users only
+})).RequireAuthorization();
 
 app.Run();
