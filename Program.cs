@@ -22,16 +22,16 @@ builder.Services.AddIdentityApiEndpoints<IdentityUser>()
    .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllers();
 
-// // Exercise 2
-// builder.Services.AddSingleton<EnrollmentWorker>();
-// builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+// Exercise 2
+builder.Services.AddSingleton<EnrollmentWorker>();
+builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 
-// // Exercise 3
-// builder.Services
-//     .AddOptions<PaymentOptions>()
-//     .BindConfiguration("Payments")
-//     .ValidateDataAnnotations()
-//     .ValidateOnStart();
+// Exercise 3
+builder.Services
+    .AddOptions<PaymentOptions>()
+    .BindConfiguration("Payments")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 var app = builder.Build();
 app.UseMiddleware<RequestLoggingMiddleware>();
