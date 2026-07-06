@@ -10,7 +10,9 @@
         "dependencies": {
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "10.0.9",
           "Microsoft.AspNetCore.Identity.UI": "10.0.9",
-          "Microsoft.EntityFrameworkCore.InMemory": "10.0.9"
+          "Microsoft.AspNetCore.OpenApi": "10.0.9",
+          "Microsoft.EntityFrameworkCore.InMemory": "10.0.9",
+          "Scalar.AspNetCore": "2.16.10"
         },
         "runtime": {
           "TmsApi.dll": {}
@@ -33,6 +35,17 @@
         },
         "runtime": {
           "lib/net10.0/Microsoft.AspNetCore.Identity.UI.dll": {
+            "assemblyVersion": "10.0.9.0",
+            "fileVersion": "10.0.926.27113"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.OpenApi/10.0.9": {
+        "dependencies": {
+          "Microsoft.OpenApi": "2.0.0"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.AspNetCore.OpenApi.dll": {
             "assemblyVersion": "10.0.9.0",
             "fileVersion": "10.0.926.27113"
           }
@@ -86,6 +99,22 @@
             "fileVersion": "10.0.926.27113"
           }
         }
+      },
+      "Microsoft.OpenApi/2.0.0": {
+        "runtime": {
+          "lib/net8.0/Microsoft.OpenApi.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.0"
+          }
+        }
+      },
+      "Scalar.AspNetCore/2.16.10": {
+        "runtime": {
+          "lib/net10.0/Scalar.AspNetCore.dll": {
+            "assemblyVersion": "2.16.10.0",
+            "fileVersion": "2.16.10.0"
+          }
+        }
       }
     }
   },
@@ -108,6 +137,13 @@
       "sha512": "sha512-4VYkt04Vqkju3srIXzcVbYxEmhCmzI+NXw1HXl96CXhzx8CZimNKOkqjgO3QO844gDdwF9mWGnOwkKpD0qtEcA==",
       "path": "microsoft.aspnetcore.identity.ui/10.0.9",
       "hashPath": "microsoft.aspnetcore.identity.ui.10.0.9.nupkg.sha512"
+    },
+    "Microsoft.AspNetCore.OpenApi/10.0.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-1ihb8FO9cGgEK1/m3CTtT/SfnynwmiZib0W2pcDVj3KSWk/Sca4VOXEtaptKQc582zpFrzTFiwkGRCglt6H+WQ==",
+      "path": "microsoft.aspnetcore.openapi/10.0.9",
+      "hashPath": "microsoft.aspnetcore.openapi.10.0.9.nupkg.sha512"
     },
     "Microsoft.EntityFrameworkCore/10.0.9": {
       "type": "package",
@@ -143,6 +179,20 @@
       "sha512": "sha512-UpRgjjSUmF7KYZTIv1Zd2Y0Wv2oK9jE+Jmyp4UMynTowjvJGG1yrRe2JodYyVgcDgZF2auGwYEl+U0J1+YhBRw==",
       "path": "microsoft.extensions.fileproviders.embedded/10.0.9",
       "hashPath": "microsoft.extensions.fileproviders.embedded.10.0.9.nupkg.sha512"
+    },
+    "Microsoft.OpenApi/2.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GGYLfzV/G/ct80OZ45JxnWP7NvMX1BCugn/lX7TH5o0lcVaviavsLMTxmFV2AybXWjbi3h6FF1vgZiTK6PXndw==",
+      "path": "microsoft.openapi/2.0.0",
+      "hashPath": "microsoft.openapi.2.0.0.nupkg.sha512"
+    },
+    "Scalar.AspNetCore/2.16.10": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dJsam1uxJ+h6YzaqDGjja1y3miyBd4VDumMwwow03yJapiRp3OtV5lMaOUvp8w5b16gAflYyvfj7HDL+0X2Rqw==",
+      "path": "scalar.aspnetcore/2.16.10",
+      "hashPath": "scalar.aspnetcore.2.16.10.nupkg.sha512"
     }
   }
 }
