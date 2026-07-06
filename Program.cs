@@ -34,6 +34,18 @@ builder.Services
     .ValidateOnStart();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var enrollmentService = scope.ServiceProvider.GetRequiredService<IEnrollmentService>();
+    
+   
+    await enrollmentService.EnrollAsync("S-001", "CS-101");
+    
+    await enrollmentService.EnrollAsync("S-001", "CS-101");
+}
+
+
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.MapIdentityApi<IdentityUser>();
 app.UseRouting();
@@ -48,5 +60,6 @@ app.MapGet("/api/assessments/results", () => Results.Ok(new
     studentId = "S-001",
     letterGrade = "A"
 })).RequireAuthorization();
+
 
 app.Run();
