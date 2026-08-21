@@ -49,17 +49,15 @@ public class CoursesController(
                              ?? $"/api/courses/{id}/enrollments";
 
         var links = new List<LinkDto>
-        {
-            new(selfUrl, "self", "GET"),
-            new(selfUrl, "update", "PUT"),
-            new(selfUrl, "delete", "DELETE"),
-            new(enrollmentsUrl, "enrollments", "GET")
-        };
+{
+    new(selfUrl, "self", "GET"),
+    new(enrollmentsUrl, "enrollments", "GET")
+};
 
-        if (course.EnrollmentCount < course.MaxCapacity)
-        {
-            links.Add(new LinkDto(enrollmentsUrl, "enroll", "POST"));
-        }
+if (course.EnrollmentCount < course.MaxCapacity)
+{
+    links.Add(new LinkDto(enrollmentsUrl, "enroll", "POST"));
+}
 
         var detailDto = new CourseDetailDto
         {
