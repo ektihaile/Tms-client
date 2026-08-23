@@ -8,5 +8,12 @@ export const routes: Routes = [
         (m) => m.StudentDashboardComponent
       ),
   },
+  {
+    path: "courses/:id",
+    loadComponent: () =>
+      import("./features/course-detail/course-detail.component").then(
+        (m) => m.CourseDetailComponent
+      ),
+  },
   { path: "", redirectTo: "dashboard", pathMatch: "full" },
 ];

@@ -1,10 +1,9 @@
 import { Component, signal } from '@angular/core';
-import { CourseCardComponent } from '../../ui/course-carcomponent';
+
 import { Course } from '../../models/course.model';
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CourseCardComponent],
   templateUrl: './student-dashboard.component.html',
   styleUrl: './student-dashboard.component.scss'
 })
