@@ -1,0 +1,21 @@
+<p>grade-submission works!</p>
+<form [formGroup]="gradeForm" (ngSubmit)="onSubmit()">
+  <div>
+    <label>Student ID:</label>
+    <input type="number" formControlName="studentId" />
+  </div>
+
+  <div>
+    <label>Course ID:</label>
+    <input type="number" formControlName="courseId" />
+  </div>
+
+  <div>
+    <label>Score:</label>
+    <input type="number" formControlName="score" />
+  </div>
+
+  <button type="submit" [disabled]="isSubmitting()">
+    {{ isSubmitting() ? 'Submitting...' : 'Submit Final Grades' }}
+  </button>
+</form>
