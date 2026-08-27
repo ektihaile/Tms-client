@@ -1,0 +1,18 @@
+<p>enrollment-list works!</p>
+@if (store.isLoading()) {
+  <p>Loading enrollments...</p>
+}
+
+@for (enrollment of store.entities(); track enrollment.id) {
+  <div class="enrollment-card" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 8px;">
+    <span>{{ enrollment.studentName }} — {{ enrollment.courseName }}</span>
+    <span class="status" style="margin-left: 10px; font-weight: bold;">{{ enrollment.status }}</span>
+    @if (enrollment.status === 'Pending') {
+      <button (click)="onApprove(enrollment.id)" style="margin-left: 15px;">Approve</button>
+    }
+  </div>
+}
+
+@if (store.error()) {
+  <p class="error" style="color: red;">{{ store.error() }}</p>
+}
