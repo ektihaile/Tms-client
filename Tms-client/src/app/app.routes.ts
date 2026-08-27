@@ -23,4 +23,12 @@ export const routes: Routes = [
       ),
   },
   { path: "", redirectTo: "dashboard", pathMatch: "full" },
+
+{
+path: 'grade-submission',
+loadComponent: () =>
+import('./features/grade-submission/grade-submission.component')
+.then(m => m.GradeSubmissionComponent)
+}
+
 ];
