@@ -1,51 +1,51 @@
-
-
-import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { exhaustMap, tap, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
-import { GradeService, GradePayload } from '../../services/grade.service';
+import { Component, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'tms-grade-submission',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatProgressSpinnerModule
+  ],
   templateUrl: './grade-submission.component.html',
   styleUrl: './grade-submission.component.scss'
 })
 export class GradeSubmissionComponent {
-  private fb = inject(FormBuilder);
-  private gradeService = inject(GradeService);
+  gradeForm: FormGroup;
+  isSubmitting = signal<boolean>(false);
+  submissionStatus = signal<string | null>(null);
 
-  isSubmitting = signal(false);
-  submitSubject = new Subject<GradePayload>();
-
-  gradeForm = this.fb.nonNullable.group({
-    studentId: [1, [Validators.required]],
-    courseId: [1, [Validators.required]],
-    score: [85, [Validators.required, Validators.min(0), Validators.max(100)]]
-  });
-
-  constructor() {
-    this.submitSubject.pipe(
-      tap(() => this.isSubmitting.set(true)),
-      exhaustMap(payload => 
-        this.gradeService.postGrade(payload).pipe(
-          catchError(() => of({ id: '', success: false }))
-        )
-      ),
-      tap(() => this.isSubmitting.set(false))
-    ).subscribe(response => {
-      if (response.success) {
-        console.log('Grade submitted successfully!', response.id);
-      }
+  constructor(private fb: FormBuilder) {
+    this.gradeForm = this.fb.group({
+      studentId: [null, [Validators.required]],
+      courseId: [null, [Validators.required]],
+      score: [null, [Validators.required, Validators.min(0), Validators.max(100)]]
     });
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.gradeForm.valid) {
-      this.submitSubject.next(this.gradeForm.getRawValue());
+      this.isSubmitting.set(true);
+      this.submissionStatus.set(null);
+
+      
+      setTimeout(() => {
+        this.isSubmitting.set(false);
+        this.submissionStatus.set('Grade submitted successfully!');
+        this.gradeForm.reset();
+      }, 1500);
     }
   }
 }

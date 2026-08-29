@@ -1,7 +1,3 @@
-import { Service } from '@angular/core';
-
-@Service()
-export class SignalrService {}
 import { Injectable, signal } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 
@@ -16,7 +12,7 @@ export class SignalRService {
 
   public startConnection(): void {
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('/api/hub/tms', {
+      .withUrl('/hubs/tms', {
         transport: signalR.HttpTransportType.WebSockets
       })
       .withAutomaticReconnect()

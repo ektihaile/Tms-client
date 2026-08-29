@@ -2,6 +2,7 @@ import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
+import { environment } from '../../environments/environment.development';
 
 export interface EnrollmentStatusEvent {
   id: string;
@@ -24,7 +25,7 @@ export class LiveSyncService {
     if (!isPlatformBrowser(this.platformId)) return;
 
     this.connection = new HubConnectionBuilder()
-      .withUrl('/hubs/tms')
+      .withUrl(environment.signalRUrl)
       .withAutomaticReconnect([0, 2000, 10000, 30000])
       .build();
 
