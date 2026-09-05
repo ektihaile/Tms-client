@@ -14,7 +14,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       if (err.status === 401) {
         // Redirect expired or unauthenticated sessions back to login
         router.navigate(['/login']);
-      } else {
+      } else if (err.status !== 429) {
         // Surface structured error to developer console / UI notification
         console.error('API Error Response:', detailMessage);
       }
