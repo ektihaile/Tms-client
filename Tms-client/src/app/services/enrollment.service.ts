@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment.development';
 })
 export class EnrollmentService {
   private http = inject(HttpClient);
-  private baseUrl = `${environment.apiUrl}/v1/enrollments`;
+  private baseUrl = `${environment.apiUrl}/enrollments`;
 
   getAll(): Observable<Enrollment[]> {
     return this.http.get<Enrollment[]>(this.baseUrl);

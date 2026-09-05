@@ -4,10 +4,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-
 using Scalar.AspNetCore;
-
-
 using TmsApi.Api.Hubs;
 using TmsApi.Api.RateLimiting;
 using Polly;
@@ -21,7 +18,6 @@ using TmsApi.Application.Interfaces;
 using TmsApi.Infrastructure.ExternalServices;
 using TmsApi.Application.Transcripts;
 
-
 using TmsApi.Infrastructure.Persistence;
 using TmsApi.Infrastructure.Services;
 using TmsApi.Infrastructure.Transcripts;
@@ -29,6 +25,7 @@ using TmsApi.Infrastructure.Workers;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Antiforgery;
 using HealthChecks.NpgSql;
 
 using OpenTelemetry.Metrics;
@@ -36,6 +33,12 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register ProblemDetails support once
+builder.Services.AddProblemDetails();
+
+builder.Services.AddControllers();
+
 const string ServiceName = "tms-api";
 
 builder.Services.AddOpenTelemetry()
@@ -54,12 +57,14 @@ builder.Services.AddOpenTelemetry()
         .AddRuntimeInstrumentation()
         .AddOtlpExporter());
 
-builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 
 builder.Services.AddMemoryCache();
-builder.Services.AddControllers();
-builder.Services.AddSignalR();
+builder.Services.AddControllers()
+.AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 
 builder.Services.AddHealthChecks()
     .AddCheck(
@@ -73,22 +78,19 @@ builder.Services.AddHealthChecks()
 
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
-
-
 builder.Services.AddDbContext<TmsDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("TmsDatabase")));
 
-
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
-
+builder.Services.AddScoped<ITranscriptNotifier, SignalRTranscriptNotifier>();
 
 builder.Services.AddSingleton<
     ITranscriptStatusStore,
     InMemoryTranscriptStatusStore>();
 
-
+// Transcript Channel & Worker
 builder.Services.AddSingleton(
     Channel.CreateBounded<TranscriptRequest>(
         new BoundedChannelOptions(100)
@@ -96,16 +98,25 @@ builder.Services.AddSingleton(
             FullMode = BoundedChannelFullMode.Wait
         }));
 
-
 builder.Services.AddHostedService<TranscriptWorker>();
 
-builder.Services.AddApiVersioning();
+// Enrollment Channel & Worker (Added)
+builder.Services.AddSingleton(
+    Channel.CreateBounded<EnrollmentRequest>(
+        new BoundedChannelOptions(100)
+        {
+            FullMode = BoundedChannelFullMode.Wait
+        }));
+
+builder.Services.AddHostedService<EnrollmentWorker>();
+
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new Asp.Versioning.ApiVersion(2, 0);
     options.AssumeDefaultVersionWhenUnspecified = true;
     options.ReportApiVersions = true;
-});
+})
+.AddMvc(); 
 
 builder.Logging.AddJsonConsole(options =>
 {
@@ -115,6 +126,46 @@ builder.Logging.AddJsonConsole(options =>
         Indented = false
     };
 });
+
+var allowedOrigins = builder.Configuration
+    .GetSection("AllowedOrigins").Get<string[]>()
+    ?? ["http://localhost:4200"];
+
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-XSRF-TOKEN";
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+
+    options.AddPolicy("TmsClient", policy =>
+    {
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.SetIsOriginAllowed(origin =>
+            {
+                var uri = new Uri(origin);
+                return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+            });
+        }
+        else
+        {
+            policy.WithOrigins(allowedOrigins);
+        }
+
+        policy.AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials()
+              .WithExposedHeaders("*");
+    });
+});
+
+builder.Services.AddSignalR();
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -228,14 +279,10 @@ builder.Services.AddRateLimiter(options =>
     };
 });
 
-
 builder.Services.AddResiliencePipeline("certificate-api", pipeline =>
 {
     pipeline
-        // Outer: per-request hard timeout
         .AddTimeout(TimeSpan.FromSeconds(5))
-
-        // Middle: circuit breaker
         .AddCircuitBreaker(new CircuitBreakerStrategyOptions
         {
             FailureRatio = 0.5,
@@ -249,22 +296,16 @@ builder.Services.AddResiliencePipeline("certificate-api", pipeline =>
 
             OnOpened = args =>
             {
-                Console.WriteLine(
-                    "Circuit OPENED - stopping requests to certificate service");
-
+                Console.WriteLine("Circuit OPENED - stopping requests to certificate service");
                 return ValueTask.CompletedTask;
             },
 
             OnClosed = args =>
             {
-                Console.WriteLine(
-                    "Circuit CLOSED - certificate service recovered");
-
+                Console.WriteLine("Circuit CLOSED - certificate service recovered");
                 return ValueTask.CompletedTask;
             }
         })
-
-        // Inner: retry only transient failures
         .AddRetry(new RetryStrategyOptions
         {
             MaxRetryAttempts = 3,
@@ -279,9 +320,7 @@ builder.Services.AddResiliencePipeline("certificate-api", pipeline =>
             OnRetry = args =>
             {
                 Console.WriteLine(
-                    $"Retry #{args.AttemptNumber} after " +
-                    $"{args.RetryDelay.TotalMilliseconds:F0}ms " +
-                    $"({args.Outcome.Exception?.GetType().Name})");
+                    $"Retry #{args.AttemptNumber} after {args.RetryDelay.TotalMilliseconds:F0}ms ({args.Outcome.Exception?.GetType().Name})");
 
                 return ValueTask.CompletedTask;
             }
@@ -300,10 +339,42 @@ builder.Services.AddHttpClient<ICertificateService, CertificateService>(
     })
     .AddStandardResilienceHandler();
 
-
 var app = builder.Build();
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
+app.UseExceptionHandler();
+app.UseStatusCodePages();
+
+app.UseRouting();
+app.UseCors("TmsClient");
+app.UseAuthentication();
+app.UseAuthorization();
+
+// XSRF Token issuance middleware for authenticated / active sessions
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true || context.Request.Cookies.ContainsKey("tms_auth"))
+    {
+        var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+        var tokens = antiforgery.GetAndStoreTokens(context);
+        context.Response.Cookies.Append("XSRF-TOKEN", tokens.RequestToken!,
+            new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = !app.Environment.IsDevelopment(),
+                SameSite = SameSiteMode.Strict
+            });
+    }
+    await next(context);
+});
+
+app.UseRateLimiter();
+
+app.MapControllers();
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("live")
@@ -314,25 +385,13 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
     Predicate = check => check.Tags.Contains("ready")
 }).DisableRateLimiting();
 
-app.UseRouting();
-
-app.UseRateLimiter();
-
-app.UseExceptionHandler();
-
-app.UseStatusCodePages();
+app.MapHub<TmsHub>("/hubs/tms").RequireCors("TmsClient");
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-
-
-app.MapControllers();
-
-app.MapHub<TmsHub>("/hubs/tms");
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -344,7 +403,6 @@ if (app.Environment.IsDevelopment())
     await DataSeeder.SeedAsync(context);
 }
 
-
 var attempts = 0;
 
 app.MapPost("/fake/certificates", async () =>
@@ -353,7 +411,6 @@ app.MapPost("/fake/certificates", async () =>
 
     if (n % 7 == 0)
     {
-        // Simulate downstream hanging for 20 seconds
         await Task.Delay(TimeSpan.FromSeconds(20));
 
         return Results.Ok(new
@@ -365,7 +422,7 @@ app.MapPost("/fake/certificates", async () =>
 
     if (n % 3 != 0)
     {
-                return Results.StatusCode(
+        return Results.StatusCode(
             StatusCodes.Status503ServiceUnavailable);
     }
 

@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
                 Expires = DateTimeOffset.UtcNow.AddHours(2)
             });
 
-            return Ok(new UserProfileDto.cs("System Admin", "Admin"));
+            return Ok(new UserProfileDto("System Admin", "Admin"));
         }
 
         return Unauthorized(new { detail = "Invalid username or password." });
@@ -45,7 +45,7 @@ public class AuthController : ControllerBase
     {
         if (Request.Cookies.TryGetValue("tms_auth", out _))
         {
-            return Ok(new UserProfileDto.cs("System Admin", "Admin"));
+            return Ok(new UserProfileDto("System Admin", "Admin"));
         }
 
         return Unauthorized(new { detail = "Session expired or missing authentication cookie." });

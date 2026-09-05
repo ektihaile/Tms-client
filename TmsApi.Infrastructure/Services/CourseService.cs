@@ -129,27 +129,19 @@ public class CourseService : ICourseService
 
         var totalCount = await query.CountAsync(ct);
 
-        var coursesList = await query
+        // N+1 to remove the N+1 problem,
+        var items = await query
             .OrderBy(c => c.Id)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .ToListAsync(ct);
-
-        var items = new List<CourseResponseDto>();
-
-        foreach (var c in coursesList)
-        {
-            var count = await _context.Enrollments
-                .CountAsync(e => e.CourseId == c.Id, ct);
-
-            items.Add(new CourseResponseDto(
+            .Select(c => new CourseResponseDto(
                 c.Id,
                 c.Code,
                 c.Title,
                 c.MaxCapacity,
-                count
-            ));
-        }
+                _context.Enrollments.Count(e => e.CourseId == c.Id)
+            ))
+            .ToListAsync(ct);
 
         return new PagedResponse<CourseResponseDto>
         {

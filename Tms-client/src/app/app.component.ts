@@ -13,7 +13,6 @@ export class AppComponent implements OnInit {
   private store = inject(EnrollmentStore);
 
   ngOnInit(): void {
-    // Load initial enrollments and start real-time SignalR live updates
     this.store.loadEnrollments();
     this.store.listenForLiveUpdates();
   }

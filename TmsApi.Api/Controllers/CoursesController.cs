@@ -17,14 +17,17 @@ public class CoursesController(
     ICourseService courseService,
     LinkGenerator linkGenerator) : ControllerBase
 {
-    [HttpGet]
+[HttpGet]
     [EndpointSummary("List courses with pagination")]
     [EndpointDescription("Returns a paginated, optionally filtered list of TMS courses. PageSize is capped at 50.")]
     [ProducesResponseType(typeof(PagedResponse<CourseResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCourses(
-        [FromQuery] PagedRequest request,
-        CancellationToken ct)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        CancellationToken ct = default)
     {
+        var request = new PagedRequest { Page = page, PageSize = pageSize };
+        
         var result = await courseService.GetCoursesAsync(request, ct);
         return Ok(result);
     }
