@@ -11,6 +11,7 @@ C:\Users\hp\TmsApi\TmsApi.Api\bin\Debug\net10.0\Asp.Versioning.Abstractions.dll
 C:\Users\hp\TmsApi\TmsApi.Api\bin\Debug\net10.0\Asp.Versioning.Http.dll
 C:\Users\hp\TmsApi\TmsApi.Api\bin\Debug\net10.0\Asp.Versioning.Mvc.dll
 C:\Users\hp\TmsApi\TmsApi.Api\bin\Debug\net10.0\HealthChecks.NpgSql.dll
+C:\Users\hp\TmsApi\TmsApi.Api\bin\Debug\net10.0\BCrypt-Net-Next.dll
 C:\Users\hp\TmsApi\TmsApi.Api\bin\Debug\net10.0\FluentValidation.dll
 C:\Users\hp\TmsApi\TmsApi.Api\bin\Debug\net10.0\Humanizer.dll
 C:\Users\hp\TmsApi\TmsApi.Api\bin\Debug\net10.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll

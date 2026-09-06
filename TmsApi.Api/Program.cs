@@ -100,6 +100,8 @@ builder.Services.AddSingleton(
 
 builder.Services.AddHostedService<TranscriptWorker>();
 
+
+
 // Enrollment Channel & Worker (Added)
 builder.Services.AddSingleton(
     Channel.CreateBounded<EnrollmentRequest>(
@@ -338,6 +340,22 @@ builder.Services.AddHttpClient<ICertificateService, CertificateService>(
         client.BaseAddress = new Uri(baseUrl);
     })
     .AddStandardResilienceHandler();
+
+
+
+var service = new CryptoDemoService();
+string hash1 = service.HashUserPassword("Password123!");
+string hash2 = service.HashUserPassword("Password123!");
+
+Console.WriteLine($"Hash 1: {hash1}");
+Console.WriteLine($"Hash 2: {hash2}");
+
+bool match1 = service.VerifyUserPassword("Password123!", hash1); // true
+bool match2 = service.VerifyUserPassword("Password123!", hash2); // true
+
+Console.WriteLine($"Match 1: {match1}");
+Console.WriteLine($"Match 2: {match2}");
+
 
 var app = builder.Build();
 
