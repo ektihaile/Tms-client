@@ -1,0 +1,19 @@
+<p>instructor-dashboard works!</p>
+<div class="dashboard-header">
+  <h1>Instructor Command Center</h1>
+  <p>Pending: {{ store.pendingCount() }}</p>
+</div>
+
+<div class="chart-section" style="margin-top: 40px; min-height: 300px;">
+  @defer (on viewport; prefetch on idle(500)) {
+    <tms-analytics-chart [data]="store.entities()" />
+  } @placeholder {
+    <div class="skeleton-chart" style="padding: 20px; background: #f0f0f0; border-radius: 8px; text-align: center;">
+      Scroll down to view analytics...
+    </div>
+  } @loading (minimum 500ms) {
+    <div class="spinner" style="text-align: center; padding: 20px;">Downloading chart engine...</div>
+  } @error {
+    <p style="color: red;">Failed to load chart. Check your connection.</p>
+  }
+</div>

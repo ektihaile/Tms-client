@@ -13,6 +13,9 @@ public interface IEnrollmentService
         int courseId,
         CancellationToken ct = default);
 
+    Task<IReadOnlyList<EnrollmentResponseDto>> GetAllAsync(
+        CancellationToken ct = default);
+
     Task<EnrollmentResponseDto> CreateAsync(
         int courseId,
         EnrollStudentRequest request,

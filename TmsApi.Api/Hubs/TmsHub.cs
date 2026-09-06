@@ -6,13 +6,24 @@ public class TmsHub : Hub<ITmsHubClient>
 {
     public override async Task OnConnectedAsync()
     {
-        var studentId = Context.GetHttpContext()?.Request.Query["studentId"].ToString();
-
-        if (!string.IsNullOrWhiteSpace(studentId))
+        try
         {
-            await Groups.AddToGroupAsync(
-                Context.ConnectionId,
-                $"student:{studentId}");
+            var httpContext = Context.GetHttpContext();
+            if (httpContext != null)
+            {
+                var studentId = httpContext.Request.Query["studentId"].ToString();
+
+                if (!string.IsNullOrWhiteSpace(studentId))
+                {
+                    await Groups.AddToGroupAsync(
+                        Context.ConnectionId,
+                        $"student:{studentId}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Console.WriteLine($"Error in OnConnectedAsync: {ex.Message}");
         }
 
         await base.OnConnectedAsync();
@@ -20,13 +31,24 @@ public class TmsHub : Hub<ITmsHubClient>
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var studentId = Context.GetHttpContext()?.Request.Query["studentId"].ToString();
-
-        if (!string.IsNullOrWhiteSpace(studentId))
+        try
         {
-            await Groups.RemoveFromGroupAsync(
-                Context.ConnectionId,
-                $"student:{studentId}");
+            var httpContext = Context.GetHttpContext();
+            if (httpContext != null)
+            {
+                var studentId = httpContext.Request.Query["studentId"].ToString();
+
+                if (!string.IsNullOrWhiteSpace(studentId))
+                {
+                    await Groups.RemoveFromGroupAsync(
+                        Context.ConnectionId,
+                        $"student:{studentId}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Console.WriteLine($"Error in OnDisconnectedAsync: {ex.Message}");
         }
 
         await base.OnDisconnectedAsync(exception);
