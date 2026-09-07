@@ -1,16 +1,18 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TmsApi.Domain.Entities;
+using TmsApi.Infrastructure.Identity;
 
 namespace TmsApi.Infrastructure.Persistence;
 
 public class TmsDbContext(DbContextOptions<TmsDbContext> options) 
-    : DbContext(options)
+    : IdentityDbContext<TmsUser>(options)
 {
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Course> Courses => Set<Course>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
     public DbSet<Assessment> Assessments => Set<Assessment>();
-
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public override int SaveChanges()
     {
@@ -18,14 +20,12 @@ public class TmsDbContext(DbContextOptions<TmsDbContext> options)
         return base.SaveChanges();
     }
 
-
     public override Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default)
     {
         UpdateAuditFields();
         return base.SaveChangesAsync(cancellationToken);
     }
-
 
     private void UpdateAuditFields()
     {
