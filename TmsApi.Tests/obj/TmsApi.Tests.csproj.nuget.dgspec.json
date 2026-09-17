@@ -728,6 +728,10 @@
               "target": "Package",
               "version": "[17.14.1, )"
             },
+            "NSubstitute": {
+              "target": "Package",
+              "version": "[6.2.0, )"
+            },
             "coverlet.collector": {
               "target": "Package",
               "version": "[6.0.4, )"

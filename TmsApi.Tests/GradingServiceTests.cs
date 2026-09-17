@@ -34,4 +34,5 @@ public class GradingServiceTests
         var result = service.CalculateLetterGrade(score, maxScore);
         Assert.Equal(expected, result);
     }
-}
+
+    }
