@@ -480,7 +480,6 @@ if (app.Environment.IsDevelopment())
 }
 
 var attempts = 0;
-
 app.MapPost("/fake/certificates", async () =>
 {
     var n = Interlocked.Increment(ref attempts);
@@ -518,4 +517,9 @@ app.MapPost("/fake/certificates", async () =>
 })
 .WithTags("lab-fixtures");
 
+
+
 app.Run();
+
+public partial class Program { }
+
