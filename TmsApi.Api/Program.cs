@@ -15,6 +15,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
+using TmsApi.Api.Authorization;
 using TmsApi.Application.Dtos;
 using TmsApi.Application.Interfaces;
 
@@ -29,6 +30,7 @@ using TmsApi.Infrastructure.Workers;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authorization;
 using HealthChecks.NpgSql;
 
 using OpenTelemetry.Metrics;
@@ -39,6 +41,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Register ProblemDetails support once
 builder.Services.AddProblemDetails();
+ 
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("CanEditCourse", policy =>
+        policy.Requirements.Add(new CourseInstructorRequirement()));
+
+builder.Services.AddScoped<IAuthorizationHandler, CourseInstructorHandler>();
 
 builder.Services.AddControllers();
 
@@ -346,6 +354,20 @@ builder.Services.AddHttpClient<ICertificateService, CertificateService>(
 
 
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("AuthLimiter", opt =>
+    {
+        opt.PermitLimit = 5;          
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+});
+
+
+
+
+
 var service = new CryptoDemoService();
 string hash1 = service.HashUserPassword("Password123!");
 string hash2 = service.HashUserPassword("Password123!");
@@ -358,7 +380,8 @@ bool match2 = service.VerifyUserPassword("Password123!", hash2); // true
 
 Console.WriteLine($"Match 1: {match1}");
 Console.WriteLine($"Match 2: {match2}");
-
+ 
+ 
 
 builder.Services.AddScoped<TokenService>();
 
@@ -416,7 +439,15 @@ app.Use(async (context, next) =>
     }
     await next(context);
 });
-
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';");
+    
+    await next();
+});
 app.UseRateLimiter();
 
 app.MapControllers();
