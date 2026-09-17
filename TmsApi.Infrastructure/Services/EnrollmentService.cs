@@ -52,6 +52,22 @@ public class EnrollmentService : IEnrollmentService
             .ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<EnrollmentResponseDto>> GetAllAsync(
+        CancellationToken ct = default)
+    {
+        return await _context.Enrollments
+            .AsNoTracking()
+            .Select(e => new EnrollmentResponseDto
+            {
+                Id = e.Id,
+                CourseId = e.CourseId,
+                StudentEmail = "",
+                StudentName = "",
+                EnrolledAtUtc = DateTime.UtcNow
+            })
+            .ToListAsync(ct);
+    }
+
     public async Task<EnrollmentResponseDto> CreateAsync(
         int courseId,
         EnrollStudentRequest request,

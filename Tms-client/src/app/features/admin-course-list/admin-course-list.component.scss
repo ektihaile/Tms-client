@@ -1,0 +1,19 @@
+.admin-course-list {
+  padding: 2rem;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.error {
+  color: #b00020;
+}
