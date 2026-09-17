@@ -1,4 +1,5 @@
 import { Routes } from "@angular/router";
+import { roleGuard } from "./guards/role-guard";
 
 export const routes: Routes = [
   {
@@ -35,6 +36,14 @@ export const routes: Routes = [
       import('./features/grade-submission/grade-submission.component')
         .then(m => m.GradeSubmissionComponent)
   },
+  // 👉 Exercise 6 የሚጠይቀው አዲስ የ Admin ራውት (በ Guard የተጠበቀ)
+  {
+    path: 'admin/courses',
+    loadComponent: () =>
+      import('./features/admin-course-list/admin-course-list.component')
+        .then(m => m.AdminCourseListComponent),
+    canActivate: [roleGuard('Admin')]
+  },
   { path: "", redirectTo: "dashboard", pathMatch: "full" },
-  { path: "**", redirectTo: "dashboard" }
+  { path: "**", redirectTo: "dashboard" },
 ];

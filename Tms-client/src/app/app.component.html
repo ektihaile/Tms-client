@@ -2,6 +2,16 @@
   <h1>TMS - Training Management System</h1>
 </header>
 
+<nav style="padding: 0.5rem 1rem; background: #f4f4f4;">
+  <a routerLink="/dashboard" style="margin-right: 15px;">Dashboard</a>
+  <a routerLink="/courses" style="margin-right: 15px;">Courses</a>
+
+
+  @if (auth.hasRole('Admin')) {
+    <a routerLink="/admin/courses">Admin Courses</a>
+  }
+</nav>
+
 <main style="padding: 1rem;">
   <router-outlet></router-outlet>
 </main>
